@@ -44,7 +44,7 @@ def register():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        email = request.form['email']
+        email = request.form['email'].lower()
         db = get_db()
         error = None
         if not username:
@@ -54,7 +54,7 @@ def register():
 
         if error is None:
             try:
-                if email == "agene001@umn.edu":
+                if email == "helloworld":
                     db.execute(
                         "INSERT INTO user (username, password,type) VALUES (?, ?,'admin')",
                         (username, generate_password_hash(password)),
