@@ -2,8 +2,6 @@ import os
 
 from flask import Flask, render_template, session, app, Response, redirect
 
-from datetime import timedelta
-
 
 # to run flask --app flaskr run --debug
 def create_app(test_config=None, instance_relative_config=True):
@@ -30,7 +28,6 @@ def create_app(test_config=None, instance_relative_config=True):
         pass
 
     # a simple page that says hello
-
     from . import db
     db.init_app(app)
 
@@ -42,15 +39,18 @@ def create_app(test_config=None, instance_relative_config=True):
 
     @app.errorhandler(Exception)
     def page_not_found(e):
-        return render_template('error.html',code=e.code)
+        return render_template('error.html', code=e.code)
 
     return app
 
 
 if __name__ == '__main__':
-    app = create_app(True)
-    app.debug = True
-    app.run(port=int(os.environ.get("PORT", 8080)), host='127.0.0.1', debug=True)
+    from waitress import serve
+
+    app = create_app()
+    serve(app, host='0.0.0.0', port=5000)
+    # app.debug = True
+    # app.run(port=int(os.environ.get("PORT", 8080)), host='127.0.0.1', debug=True)
     # app.run()
 # +E436J6OPTXMyrhCUznAHEVQTTVdnFYTHdO1UPsB
 # create_app is the application factory function. You’ll add to it later in the tutorial, but it already does a lot.
