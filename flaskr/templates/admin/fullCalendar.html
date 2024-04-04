@@ -56,7 +56,7 @@
                     {# },#}
                     {%  for i in events %}
                         {
-                            title: '{{ i['title']| title }}',
+                            title: '{{ i['title']| title }} {% if i['occupied']|lower != 'nobody' %}Occupied by: {{ i['occupied']|capitalize }}{% endif %}',
                             start: {{ i["start"] }},
                             end: {{ i['end'] }},
                             display: 'block',
@@ -82,6 +82,7 @@
                 {#    console.log(info.event.extendedProps);#}
                 {#    // {description: "Lecture", department: "BioChemistry"}#}
                 {# },#}
+            dayGrid:{
                 eventMouseEnter: function (info) {
                     let para = document.createElement('p')
                     let text = document.createTextNode(`${info.event.extendedProps.description}`)
@@ -90,6 +91,7 @@
                     let zind = info.el.style.zIndex
                     para.setAttribute('class', 'popupinfo')
                     para.setAttribute('data-ind', zind)
+                    this.
                     info.el.appendChild(para)
                     info.el.style.zIndex = '10'
                 },
@@ -99,6 +101,7 @@
                     info.el.style.zIndex = zind
                     info.el.removeChild(para)
                 },
+            },
                 eventClick: function (info) {
                     bootbox.prompt({
                         message: 'Description : ' + info.event.extendedProps.description,
