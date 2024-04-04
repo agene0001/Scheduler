@@ -44,7 +44,7 @@ CREATE TABLE events(
     start TEXT NOT NULL,
     end TEXT NOT NULL,
     occupied TEXT
-)
+);
 
 INSERT INTO user (username, password, type, CICO) VALUES ('admin','pbkdf2:sha256:600000$2mrun2W8sF5nnUe7$c3bd404bbf21009ea67fa381212b738c3637e82b6bf0074fa30b24995e661fff','admin','CO');
 INSERT INTO user (username, password, type, CICO) VALUES ('tony','pbkdf2:sha256:600000$2mrun2W8sF5nnUe7$c3bd404bbf21009ea67fa381212b738c3637e82b6bf0074fa30b24995e661fff','admin','CO');
