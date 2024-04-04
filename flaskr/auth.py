@@ -54,7 +54,7 @@ def register():
 
         if error is None:
             try:
-                if email == "agene001@umn.edu":
+                if email == "helloworld":
                     db.execute(
                         "INSERT INTO user (username, password,type) VALUES (?, ?,'admin')",
                         (username, generate_password_hash(password)),
