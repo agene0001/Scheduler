@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block content %}
+    <h1>Previous Charts and Files</h1>
+    <ul>
+        {% for file in files %}
+            <li><a href="/download/{{ file }}">{{ file }}</a></li>
+        {% endfor %}
+    </ul>
+    <form method='POST' id='uploadfile' enctype="multipart/form-data">
+        <label for="upload">Upload File</label>
+        <input id="upload" class='form-control' type="file" name="upload">
+        <input type="submit" value="submit">
+    </form>
+
+    <form method="POST" id="deletefile">
+        <label for="delete">delete File</label>
+        <input id="delete" type="text" name="delete">
+        <input type="submit" value="submit" id="delsub" class="btn btn-default">
+    </form>
+    <!-- Modal -->
+
+    </div>
+    <script src="https://code.jquery.com/jquery.js"></script>
+    <script>  $(document).ready(function () {
+        $('#deletefile').on('submit', (event) => {
+
+            event.preventDefault();
+
+            var result = confirm(`Are you sure you would like to delete this ${this.querySelector('#delete').value}. This action cannot be undone`);
+            if (result) {
+                event.currentTarget.submit()
+            }
+
+
+        })
+    })</script>
+{% endblock %}

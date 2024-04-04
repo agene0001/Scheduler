@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block content %}
+    <h2></h2>
+    <form method="POST" action={{ url_for('main_page.clocksubmit') }}>
+        <div>
+            <input hidden type="text" id="time" name="time" required>
+            <input hidden type="text" id="CI/CO" name="ci-co" required>
+        </div>
+        <div>
+            <label for="name">Enter Full Name:</label>
+            <input type="text" id="name" name="name" required>
+        </div>
+        <div>
+            <label for="house">House</label>
+            <select name="house" id="house">
+                <option value="Rhode Island">Rhode Island</option>
+                <option value="Decatur">Decatur</option>
+                <option value="Freemont">Freemont</option>
+                <option value="Sailor">Sailor</option>
+                <option value="Emerson">Emerson</option>
+                <option value="Scott">Scott</option>
+                <option value="Brooklyn blvd">Brooklyn blvd</option>
+            </select>
+        </div>
+        <button type="submit" value="clockin" id="clockin">Clock In</button>
+        <button type="submit" value="clockout" id="clockout">Clock Out</button>
+
+    </form>
+    <script>
+        function formatAMPM(date) {
+            var hours = date.getHours();
+            var minutes = date.getMinutes();
+            var seconds = date.getSeconds();
+            var ampm = hours >= 12 ? 'pm' : 'am';
+            hours = hours % 12;
+            hours = hours ? hours : 12; // the hour '0' should be '12'
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            seconds = seconds<10 ? '0'+ seconds : seconds;
+            var strTime = hours + ':' + minutes + ':' + seconds + ' ' + ampm;
+            return strTime;
+        }
+
+        function getTime() {
+            let time = new Date();
+            let month = time.getMonth()+1<10 ? '0'+(time.getMonth()+1):time.getMonth()+1
+            let day = time.getDate()<10 ? '0'+time.getDate():time.getDate()
+            document.getElementById("time").value = month + "/" + day + '/' + time.getFullYear() + ' at ' + formatAMPM(time)
+            document.getElementsByTagName("h2")[0].innerHTML = month + "/" + day + '/' + time.getFullYear() + ' at ' + formatAMPM(time)
+        }
+
+        setInterval(getTime, 1000)
+
+        function clockin() {
+            document.getElementById("CI/CO").value = "CI"
+        }
+
+        function clockout() {
+            document.getElementById("CI/CO").value = 'CO'
+        }
+
+        document.getElementById('clockin').addEventListener("click", clockin)
+        document.getElementById('clockout').addEventListener("click", clockout)
+    </script>
+    {% if result %}
+        <p>{{ result }}</p>
+    {% endif %}
+    <a href={{ url_for('main_page.landing') }}>Home</a>
+{% endblock %}

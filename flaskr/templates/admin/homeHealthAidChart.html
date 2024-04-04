@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2>Miles Vents Assisted Living Charting Sheet</h2>
+    <form method="post" id="form" action="{{ url_for('main_page.homeAidChart') }}">
+
+        <label for="clientName">Resident</label>
+        <input id="clientName" name="clientName" type="text" hidden>
+
+        <div class="form-field">
+            <div class="chips">
+            </div>
+            <input placeholder="Enter residents names here" autofocus autocomplete="off" class="chip-input">
+        </div>
+        <label for="initials">Your Initials</label>
+        <input id="initials" name="initials" type="text" maxlength="2" minlength="2" required>
+        <label for="roomNum">Room Number</label>
+        <input id="roomNum" name="roomNum" type="number">
+        <label>Select the date the form should start at (this should be the saturday)</label>
+        <input id="startDate" type="date">
+        <label for="day">Select the days of the week</label>
+        <select id="day" name="day" multiple required class="form-select form-select-lg" >
+            <option value="Sunday">Sunday</option>
+            <option value="Monday">Monday</option>
+            <option value="Tuesday">Tuesday</option>
+            <option value="Wednesday">Wednesday</option>
+            <option value="Thursday">Thursday</option>
+            <option value="Friday">Friday</option>
+            <option value="Saturday">Saturday</option>
+        </select>
+        <input type="hidden" value="0" name="index">
+        <input type="button" id="next" value="Next">
+    </form>
+    <script>
+
+        var subBtn = document.getElementById('next')
+        var clients = document.getElementById('clientName')
+        var input = document.querySelector(".chip-input");
+        var chips = document.querySelector(".chips");
+
+        subBtn.addEventListener('click', function() {
+            let names = ""
+            var chip = document.getElementsByClassName("chip")
+            for (let i=0;i<chip.length;i++) {
+                console.log(chip[i].getElementsByClassName("chip--text")[0].innerText)
+                let name = chip[i].getElementsByClassName("chip--text")[0].innerText
+                names += name + ", "
+            }
+            document.getElementById('clientName').value = names
+            document.getElementById('form').submit()
+        })
+
+
+        document.querySelector(".form-field")
+            .addEventListener('click', () => {
+                input.style.display = 'block';
+                input.focus();
+            });
+
+        input.addEventListener('blur', () => {
+            input.style.display = 'none';
+        });
+
+        input.addEventListener('keypress', function (event) {
+            if (event.which === 13) {
+                chips.appendChild(function () {
+                    var _chip = document.createElement('div');
+
+                    _chip.classList.add('chip');
+                    _chip.addEventListener('click', chipClickHandler);
+
+                    _chip.append(
+                        (function () {
+                            var _chip_text = document.createElement('span');
+                            _chip_text.classList.add('chip--text');
+                            _chip_text.innerHTML = input.value;
+
+                            return _chip_text;
+                        })(),
+                        (function () {
+                            var _chip_button = document.createElement('span');
+                            _chip_button.classList.add('chip--button');
+                            _chip_button.innerHTML = 'x';
+
+                            return _chip_button;
+                        })()
+                    );
+
+                    return _chip;
+                }());
+                input.value = '';
+            }
+        });
+
+        function chipClickHandler(event) {
+            chips.removeChild(event.currentTarget);
+        }
+    </script>
+{% endblock %}

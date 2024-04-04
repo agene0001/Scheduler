@@ -1,0 +1,206 @@
+{% extends 'base.html' %}
+{% block content %}
+    <h2>{{ session['days'][ind] }}</h2>
+    <form id="form1" method="POST" action="{{ url_for('main_page.homeAidChartDays') }}">
+        <input type="hidden" value="{{ ind }}" name="index">
+
+        <fieldset>
+            <legend>Assistance with Dressing</legend>
+            <div>
+                <label for="clothes">
+                    <input type="checkbox" id="clothes" name="dressing" value="clothes">Clothes</label>
+            </div>
+            <div>
+                <label for="hearingAid">
+                    <input type="checkbox" id="hearingAid" name="dressing" value="hearingAid">Hearing Aid</label>
+            </div>
+            <div>
+                <label for="stockings">
+                    <input type="checkbox" id="stockings" name="dressing" value="stockings">Elastic
+                    Stockings/TEDs</label>
+            </div>
+            <div>
+                <label for="braces">
+                    <input type="checkbox" id="braces" name="dressing" value="braces">Braces/Orthotics</label>
+            </div>
+        </fieldset>
+        <fieldset>
+            <legend>Assistance with Hygiene</legend>
+            <div>
+                <label for="bath">
+                    <input type="checkbox" id="bath" name="hygiene" value="bath">Bath</label>
+            </div>
+            <div>
+                <label for="shampoo">
+                    <input type="checkbox" id="shampoo" name="hygiene" value="shampoo">Shampoo</label>
+            </div>
+            <div>
+                <label for="oral">
+                    <input type="checkbox" id="oral" name="hygiene" value="oral">Oral Care</label>
+            </div>
+            <div>
+                <label for="hair">
+                    <input type="checkbox" id="hair" name="hygiene" value="hair">Hair Care</label>
+            </div>
+            <div>
+                <label for="dentures">
+                    <input type="checkbox" id="dentures" name="hygiene" value="dentures">Dentures</label>
+            </div>
+            <div>
+                <label for="shaving">
+                    <input type="checkbox" id="shaving" name="hygiene" value="shaving">Shaving</label>
+            </div>
+            <div>
+                <label for="skincare">
+                    <input type="checkbox" id="skincare" name="hygiene" value="skincare">Skin Care</label>
+            </div>
+            <div>
+                <label for="nailcare">
+                    <input type="checkbox" id="nailcare" name="hygiene" value="nailcare">Nail Care</label>
+            </div>
+            <div>
+                <label for="footcare">
+                    <input type="checkbox" id="footcare" name="hygiene" value="footcare">Foot Care</label>
+            </div>
+        </fieldset>
+        <fieldset>
+            <legend>Toileting Assistance</legend>
+            <div>
+                <label for="pads">
+                    <input type="checkbox" id="pads" name="toilet" value="pads">Incontinent Pads</label>
+            </div>
+            <div>
+                <label for="bowel">
+                    <input type="checkbox" id="bowel" name="toilet" value="bowel">Bowel Movements</label>
+            </div>
+            <div>
+                <label for="toiletassistance">
+                    <input type="checkbox" id="toiletassistance" name="toilet" value="toiletassistance">Bowel Movements</label>
+            </div>
+            <div>
+                <label for="mealprep">
+                    <input type="checkbox" id="mealprep" name="toilet">
+                    <select id="meals" name="meals" disabled>
+                        <option value="AM">AM</option>
+                        <option value="PM">PM</option>
+                        <option value="AM/PM">AM/PM</option>
+                        <option value="Noon">Noon</option>
+                    </select>
+                    Meal Prep/ Plate Set Up </label>
+            </div>
+        </fieldset>
+        <fieldset>
+            <legend>Activities</legend>
+            <div>
+                <label for="standby">
+                    <input type="checkbox" id="standby" name="activity" value="standby">Standby/ Ambulation</label>
+            </div>
+            <div>
+                <label for="medReminder">
+                    <input type="checkbox" id="medReminder" name="activity" value="medReminder">Medication
+                    Reminder</label>
+            </div>
+            <div>
+                <label for="exerciseReminder">
+                    <input type="checkbox" id="exerciseReminder" name="activity" value="exerciseReminder">Exercise
+                    Reminder</label>
+            </div>
+        </fieldset>
+        <fieldset>
+            <legend>Medical Assistance/Vital Signs</legend>
+            <div>
+                <label for="MAR">
+                    <input type="checkbox" id="MAR" name="medicalAssistance" value="MAR">Medication
+                    Assistance/MAR</label>
+            </div>
+            <div>
+                <label for="TPR">
+                    <input type="checkbox" id="TPR" name="medicalAssistance" value="TPR">TPR</label>
+            </div>
+            <div>
+                <label for="BP">
+                    <input type="checkbox" id="BP" name="medicalAssistance" value="BP">BP</label>
+            </div>
+            <div>
+                <label for="Weight">
+                    <input type="checkbox" id="Weight" name="medicalAssistance" value="Weight">Weight</label>
+            </div>
+            <div>
+                <label for="BloodGlucose">
+                    <input type="checkbox" id="BloodGlucose" name="medicalAssistance" value="BloodGlucose">Blood Glucose</label>
+            </div>
+            <div>
+                <label for="Behavior/Orientation">
+                    <input type="checkbox" id="Behavior/Orientation" name="medicalAssistance"
+                           value="Behavior/Orientation">Behavior/Orientation</label>
+            </div>
+        </fieldset>
+        <fieldset>
+            <legend>Homemaking</legend>
+            <div>
+                <label for="kitchen">
+                    <input type="checkbox" id="kitchen" name="homemaking" value="kitchen">Clean Kitchen</label>
+            </div>
+            <div>
+                <label for="garbage">
+                    <input type="checkbox" id="garbage" name="homemaking" value="garbage">Remove Garbage</label>
+            </div>
+            <div>
+                <label for="food">
+                    <input type="checkbox" id="food" name="homemaking" value="food">Monitor Foods</label>
+            </div>
+            <div>
+                <label for="shopping">
+                    <input type="checkbox" id="shopping" name="homemaking" value="shopping">Shopping</label>
+            </div>
+            <div>
+                <label for="bathroom">
+                    <input type="checkbox" id="bathroom" name="homemaking" value="bathroom">Clean Bathroom</label>
+            </div>
+            <div>
+                <label for="bedroom">
+                    <input type="checkbox" id="bedroom" name="homemaking" value="bedroom">Clean Bedrooms</label>
+            </div>
+            <div>
+                <label for="linen">
+                    <input type="checkbox" id="linen" name="homemaking" value="linen">Change Linens</label>
+            </div>
+            <div>
+                <label for="clothing">
+                    <input type="checkbox" id="clothing" name="homemaking" value="clothing">Monitor Clothing</label>
+            </div>
+            <div>
+                <label for="laundry">
+                    <input type="checkbox" id="laundry" name="homemaking" value="laundry">Laundry</label>
+            </div>
+            <div>
+                <label for="vacuum">
+                    <input type="checkbox" id="vacuum" name="homemaking" value="vacuum">Vacuum</label>
+            </div>
+            <div>
+                <label for="companion">
+                    <input type="checkbox" id="companion" name="homemaking" value="companion">Companionship</label>
+            </div>
+
+        </fieldset>
+        <input type="submit" value="next">
+    </form>
+    <script>
+            let meal = document.getElementById("mealprep")
+            let meals = document.getElementById("meals")
+            meals.addEventListener('change',function(){
+                document.getElementById("mealprep").value = document.getElementById("meals").value
+            })
+            meal.addEventListener("change", function () {
+                if (this.checked) {
+                    document.getElementById("meals").removeAttribute("disabled")
+                    this.value = document.getElementById("meals").value
+                } else {
+                    document.getElementById("meals").setAttribute('disabled', "")
+                }
+
+            })
+
+    </script>
+
+{% endblock %}

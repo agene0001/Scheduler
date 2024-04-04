@@ -1,0 +1,249 @@
+{% extends 'base.html' %}
+{% block content %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js"
+            integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4"
+            crossorigin="anonymous"></script>
+
+    <script src="{{ url_for('static',filename='bootbox.min.js') }}"></script>
+    <script type='importmap'>
+        {
+          "imports": {
+            "@fullcalendar/core": "https://cdn.skypack.dev/@fullcalendar/core@6.1.11",
+            "@fullcalendar/daygrid": "https://cdn.skypack.dev/@fullcalendar/daygrid@6.1.11",
+            "@fullcalendar/timegrid": "https://cdn.skypack.dev/@fullcalendar/timegrid@6.1.11",
+            "@fullcalendar/interaction": "https://cdn.skypack.dev/@fullcalendar/interaction@6.1.11",
+            "@fullcalendar/list": "https://cdn.skypack.dev/@fullcalendar/list@6.1.11"
+          }
+        }
+    </script>
+
+    <script type='module'>
+        import {Calendar} from '@fullcalendar/core'
+        import dayGridPlugin from '@fullcalendar/daygrid'
+        import listPlugin from '@fullcalendar/list'
+        import interactionPlugin, {Draggable} from '@fullcalendar/interaction'
+        import timeGridPlugin from '@fullcalendar/timegrid'
+
+        function addHours(date, h) {
+            date.setTime(date.getTime() + (h * 60 * 60 * 1000));
+            return date;
+        }
+
+        let draggableEl = document.getElementById('draggable-el');
+        document.addEventListener('DOMContentLoaded', function () {
+            var calendarEl = document.getElementById('calendar');
+
+            const xhttp = new XMLHttpRequest();
+            var calendar = new Calendar(calendarEl, {
+                plugins: [interactionPlugin, dayGridPlugin, timeGridPlugin, listPlugin],
+
+                droppable: true,
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,listWeek'
+                },
+                navLinks: true, // can click day/week names to navigate views
+                editable: true,
+                dayMaxEvents: true,// allow "more" link when too many events
+                events: [
+
+                    {#    groupId: 999,#}
+                    {#    title: 'Repeating Event',#}
+                    {#    start: '2024-03-09T16:00:00'#}
+                    {#    end: '2024-03-13'#}
+                    {# },#}
+                    {%  for i in events %}
+                        {
+                            title: '{{ i['title']| title }}',
+                            start: {{ i["start"] }},
+                            end: {{ i['end'] }},
+                            display: 'block',
+                            {% set houses = {'rhode island': '#615A7F','decatur':'#9E7682','emerson':'#748E54','sailor':'#955E42','freemont':'#FAA6FF','scott':'#006BA6'} %}
+                            {% if houses[i['title']|lower] != None  %}
+                                color: '{{ houses[i['title']|lower] }}',
+                            {% endif %}
+                            description: 'Occupied by {{ i['occupied']|capitalize }}',
+
+                            {#eventRender: function (event, element) {#}
+                            {#    element.attr('href', 'javascript:void(0);');#}
+                            {#    element.click(function () {#}
+                            {#        bootbox.alert({#}
+                            {#            message: 'Description : ' + event.description,#}
+                            {#            title: event.title,#}
+                            {#        });#}
+                            {#    });#}
+                            {# }#}
+                        },
+                    {% endfor %}
+                ],
+                {#eventDidMount: function (info) {#}
+                {#    console.log(info.event.extendedProps);#}
+                {#    // {description: "Lecture", department: "BioChemistry"}#}
+                {# },#}
+                eventMouseEnter: function (info) {
+                    let para = document.createElement('p')
+                    let text = document.createTextNode(`${info.event.extendedProps.description}`)
+                    para.appendChild(text)
+                    para.style.color = '#ffffff'
+                    let zind = info.el.style.zIndex
+                    para.setAttribute('class', 'popupinfo')
+                    para.setAttribute('data-ind', zind)
+                    info.el.appendChild(para)
+                    info.el.style.zIndex = '10'
+                },
+                eventMouseLeave: function (info) {
+                    let para = document.querySelector('.popupinfo')
+                    let zind = para.dataset.ind
+                    info.el.style.zIndex = zind
+                    info.el.removeChild(para)
+                },
+                eventClick: function (info) {
+                    bootbox.prompt({
+                        message: 'Description : ' + info.event.extendedProps.description,
+                        title: `${info.event.title} at ${info.event.start}`,
+                        inputType: 'select',
+                        inputOptions: [{
+                            text: 'Choose One',
+                            value: ''
+                        },
+                            {
+                                text: 'Edit Who Works',
+                                value: 'EditW'
+                            },
+                            {
+                                text: 'Edit Title',
+                                value: 'EditT'
+
+                            },
+                            {
+                                text: 'Delete Entry',
+                                value: 'Delete'
+
+                            },
+                        ],
+                        callback: function (result) {
+                            if (result === 'Delete') {
+                                bootbox.confirm('Are You Sure you Would Like to Delete This Event. This Action Cannot Be Undone',
+                                    function (result1) {
+                                        if (result1 === true) {
+                                            xhttp.open("POST", "/calendar");
+                                            xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                                            xhttp.send(`delete=${info.event.title}&start=${info.event.start.getTime()}&end=${info.event.end.getTime()}`);
+                                            info.event.remove()
+                                        }
+                                    });
+                            } else if (result === 'EditW') {
+                                bootbox.prompt({
+                                    title: `${info.event.title} at ${info.event.start}`,
+                                    message: 'Who would you like to be working there. It will override anyone working there now!',
+                                    callback: function (result1) {
+                                        console.log(result1)
+                                        if (result1 === '' || result1 === null) {
+                                            return
+                                        }
+                                        xhttp.open("POST", "/calendar");
+                                        xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                                        xhttp.send(`editW=${result1}&title=${info.event.title}&start=${info.event.start.getTime()}&end=${info.event.end.getTime()}`);
+                                        setTimeout(() => {
+                                            window.location.reload()
+                                        }, 100)
+                                    }
+                                })
+
+                            } else if (result === 'EditT') {
+                                bootbox.prompt({
+                                    title: `${info.event.title} at ${info.event.start}`,
+                                    message: 'What would you like the title to be',
+                                    callback: function (result1) {
+                                        if (result1 === '' || result1 === null) {
+                                            return
+                                        }
+                                        xhttp.open("POST", "/calendar");
+                                        xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                                        xhttp.send(`editT=${result1}&title=${info.event.title}&start=${info.event.start.getTime()}&end=${info.event.end.getTime()}`);
+                                        setTimeout(() => {
+                                            window.location.reload()
+                                        }, 100)
+                                    }
+
+                                })
+                            }
+                            ;
+                        }
+                    })
+                },
+                displayEventEnd: true,
+                eventRemove: function (info) {
+                    alert(`Event Removed at: ${info.event.start}`)
+                },
+                dateClick: function (info) {
+                    bootbox.prompt({
+                        title: `Edit ${info.date.toDateString()}`,
+                        message: "Name Of Event",
+                        callback: function (result) {
+                            if (result === null || result === '') {
+                                return
+                            }
+                            bootbox.prompt({
+                                title: 'At What Time',
+                                inputType: 'time',
+                                callback: function (result1) {
+                                    if (result1 === null || result1 === '') {
+                                        return
+                                    }
+                                    let dateObj = new Date(info.date)
+                                    dateObj.setHours(parseInt(result1.split(':')[0]))
+                                    dateObj.setMinutes(parseInt(result1.split(':')[1]))
+                                        bootbox.prompt({
+                                            title: 'How Many Hours',
+                                            inputType: 'number',
+                                            callback: function (result2) {
+                                                if (result2 === null || result2 === '') {
+                                                    return
+                                                }
+                                                xhttp.open("POST", "/calendar");
+                                                xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                                                let end = addHours(new Date(dateObj), result2)
+                                                xhttp.send(`name=${result}&starttime=${dateObj.getTime()}&endtime=${end.getTime()}`);
+                                                setTimeout(() => {
+                                                    window.location.reload()
+                                                }, 100)
+                                            }
+                                        })
+
+
+                                }
+
+                            })
+                        }
+
+                    });
+                    {#let draggable = new Draggable(draggableEl, {#}
+                    {#    itemSelector: '#draggable-el',#}
+                    {#    eventData: function (eventEl) {#}
+                    {#        return {#}
+                    {#            title: eventEl.innerText#}
+                    {#        }#}
+                    {#    }#}
+                    {# });#}
+                }
+                })
+
+            let events = calendar.getEvents()
+            calendar.render();
+            })
+
+
+
+    </script>
+    {#    <div id="draggable-el">drag me</div>#}
+    <div id='calendar'></div>
+    {#    <form>#}
+    {#        <h2>Add Event</h2>#}
+    {#        <label for="event">Title</label>#}
+    {#        <input id="event" name="event">#}
+    {#        <time#}
+    {#    </form>#}
+{% endblock %}

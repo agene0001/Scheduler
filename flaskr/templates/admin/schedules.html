@@ -1,0 +1,348 @@
+{% extends 'base.html' %}
+{% block content %}
+    {#    <link rel="stylesheet" href="{{ url_for('static',filename='modal.css') }}">#}
+    {#    <button data-modal-target="#modal1">Open Modal1</button>#}
+    {#    <button data-modal-target="#modal2">Open Modal2</button>#}
+
+        <form method="POST">
+            <div>
+                <label for="sort">Filter By</label>
+                <select name="sort" id="sort">
+                    <option value="House">House</option>
+                    <option value="Name">Names</option>
+                    <option value="Everything">Everything</option>
+                </select>
+            </div>
+            <input hidden type="text" id="sortVal1" name="value">
+            <div id="controls">
+                <label for="house" id="houseL">Select House</label>
+                <select name="house" id="house" class="sortVal form-control form-select form-select-lg">
+                    <option value="Rhode Island">Rhode Island</option>
+                    <option value="Decatur">Decatur</option>
+                    <option value="Freemont">Freemont</option>
+                    <option value="Sailor">Sailor</option>
+                    <option value="Emerson">Emerson</option>
+                    <option value="Scott">Scott</option>
+                    <option value="Brooklyn blvd">Brooklyn blvd</option>
+                </select>
+                {#                <label for="date" id="dateL" hidden>Select Date</label>#}
+                {#                <input type="date" id="date" name="date" class="sortVal" hidden>#}
+                <div>
+                    <label for="name" id="nameL" hidden>For Who (Enter Full Name)</label>
+                    <input type="text" name="name" class="sortVal" hidden>
+                </div>
+                <div class="form-field" id="name" hidden>
+                    <div class="chips">
+                    </div>
+                    <input placeholder="Enter residents names here" autofocus autocomplete="off" class="chip-input">
+                </div>
+            </div>
+            <div>
+                <label for="filter">Get All Dates after this Date</label>
+                <input id="filter" name="filter" type="date" required>
+            </div>
+
+            <button type="submit" id="sub">Submit</button>
+        </form>
+    </div>
+
+    <form method="POST" id="formdelete">
+        {% if vals is defined %}
+            <table id="timesheets" class="table table-bordered table-striped" style="margin: 10px;">
+                <thead>
+                <tr class="table-primary">
+                    <th>Name</th>
+                    <th>House</th>
+                    <th>Clock in Date</th>
+                    <th>Clock out Date</th>
+                    <th>Clock in Time</th>
+                    <th>Clock out Time</th>
+                </tr>
+                </thead>
+                <tbody>
+
+                {% for i in vals %}
+                    {% set cilis = i['CIDay'].split('/')[1] | int %}
+                    {% set colis = i['CODay'].split('/')[1] | int %}
+                    {% if (cilis-colis) | abs > 1 %}
+                        <tr class="table-danger">
+
+                            <td>{{ i['Name']|capitalize }}</td>
+                            <td>{{ i['House']|capitalize }}</td>
+                            <td>{{ i['CIDay'] }}</td>
+                            <td>{{ i['CODay'] }}</td>
+                            <td>{{ i['CItime'] }}</td>
+                            <td>{{ i['COtime'] }}</td>
+
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td>{{ i['Name'] }}</td>
+                            <td>{{ i['House'] }}</td>
+                            <td>{{ i['CIDay'] }}</td>
+                            <td>{{ i['CODay'] }}</td>
+                            <td>{{ i['CItime'] }}</td>
+                            <td>{{ i['COtime'] }}</td>
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+        <label for="delete"></label>
+        <input type="text" id="delete" name="delete" value="False" hidden>
+        <label for="Name"></label>
+        <input type="text" id="Name" name="delete.name" hidden>
+        <label for="CIDate"></label>
+        <input type="text" id="CIDate" name="delete.CIDate" hidden>
+        <label for="CODate"></label>
+        <input type="text" id="CODate" name="delete.CODate" hidden>
+        <label for="CITime"></label>
+        <input type="text" id="CITime" name="delete.CITime" hidden>
+    </form>
+    <button type="button" id="getHours">Get hours</button>
+
+    <div>
+        <h2>Current Hours</h2>
+        <table id="hours" class="table table-bordered table-striped">
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th>Time Clocked In(HR:MIN:SEC)</th>
+            </tr>
+            </thead>
+            <tbody id="hoursBody">
+            </tbody>
+        </table>
+
+    </div>
+
+    <div>
+        <form method="post" id="addform">
+            <h2 class="display-3">Add Entries</h2>
+            <label for="add"></label>
+            <input type="text" id="add" name="add" value="False" hidden>
+            <label for="add.Name">Name</label>
+            <input type="text" id="add.Name" name="add.name" required>
+            <label for="add.House">House</label>
+            <select name="add.house" style="width:300px" id="house"
+                    class="sortVal form-control form-select form-select-lg">
+                <option value="Rhode Island">Rhode Island</option>
+                <option value="Decatur">Decatur</option>
+                <option value="Freemont">Freemont</option>
+                <option value="Sailor">Sailor</option>
+                <option value="Emerson">Emerson</option>
+                <option value="Scott">Scott</option>
+                <option value="Brooklyn blvd">Brooklyn blvd</option>
+            </select>
+            <label for="add.CIDate">Clock in Date</label>
+            <input type="date" id="add.CIDate" name="add.CIDate" required>
+            <label for="add.CODate">Clock out Date</label>
+            <input type="date" id="add.CODate" name="add.CODate" required>
+            <label for="add.CITime">Clock in Time</label>
+            <input type="text" id="add.CITime" name="add.CITime" required>
+            <label for="add.COTime">Clock out Time</label>
+            <input type="text" id="add.COTime" name="add.COTime" required>
+            <input type="submit" value="Submit">
+        </form>
+    </div>
+    <script>
+
+        const hoursBtn = document.getElementById("getHours");
+        const timesheets = document.getElementById("timesheets");
+
+        var input = document.querySelector(".chip-input");
+        var chips = document.querySelector(".chips");
+
+
+        document.querySelector(".form-field")
+            .addEventListener('click', () => {
+                input.removeAttribute('hidden')
+                input.style.display = 'block';
+                input.focus();
+            });
+
+        {#input.addEventListener('blur', () => {#}
+        {#    input.style.display = 'none';#}
+        {# });#}
+
+        input.addEventListener('keypress', function (event) {
+            if (event.which === 13) {
+                chips.appendChild(function () {
+                    var _chip = document.createElement('div');
+
+                    _chip.classList.add('chip');
+                    _chip.addEventListener('click', chipClickHandler);
+
+                    _chip.append(
+                        (function () {
+                            var _chip_text = document.createElement('span');
+                            _chip_text.classList.add('chip--text');
+                            _chip_text.innerHTML = input.value;
+
+                            return _chip_text;
+                        })(),
+                        (function () {
+                            var _chip_button = document.createElement('span');
+                            _chip_button.classList.add('chip--button');
+                            _chip_button.innerHTML = 'x';
+
+                            return _chip_button;
+                        })()
+                    );
+
+                    return _chip;
+                }());
+                input.value = '';
+            }
+        });
+
+        function chipClickHandler(event) {
+            chips.removeChild(event.currentTarget);
+        }
+
+
+        function getHours() {
+            let val = 0;
+            let entries = timesheets.getElementsByTagName("tbody")[0].getElementsByTagName("tr");
+            let people = {}
+            people.names = {};
+            let ind = 0;
+            for (const entry of entries) {
+                let startName = entry.getElementsByTagName("td")[0]
+                let startDay = entry.getElementsByTagName("td")[2]
+                let startTime = entry.getElementsByTagName("td")[4]
+
+                let endDay = entry.getElementsByTagName("td")[3]
+                let endTime = entry.getElementsByTagName("td")[5]
+                if (startDay && startTime && endDay && endTime) {
+                    let endDate = new Date(endDay.innerText + " " + endTime.innerText)
+                    let startDate = new Date(startDay.innerText + " " + startTime.innerText)
+
+                    let timeDiff = endDate.getTime() - startDate.getTime()
+
+                    if (`${startName.innerText}` in people.names) {
+                        people.names[`${startName.innerText}`] += timeDiff;
+                    } else {
+                        people.names[`${startName.innerText}`] = timeDiff;
+                    }
+
+                }
+
+                {#.innerText.split(":").splice(0,1).join(":")#}
+
+            }
+
+            let hoursBody = document.getElementById("hoursBody")
+            let htmlTable = ""
+            for (const i in people.names) {
+                htmlTable += `<tr><td>${i}</td><td>${milliToTime(people.names[i])}</td></tr>`
+
+            }
+            hoursBody.innerHTML = htmlTable
+
+        }
+
+        addEventListener('load', function () {
+
+            document.getElementById('addform').addEventListener('submit', addEntry)
+
+            rows = document.getElementById('timesheets').getElementsByTagName('tr')
+            for (let i = 1; i < rows.length; i++) {
+                console.log(rows[i])
+                rows[i].addEventListener('click', deleteEntry)
+            }
+
+        })
+
+        function addEntry() {
+            document.getElementById('add').value = 'True'
+
+            console.log(document.getElementById('add').value)
+
+        }
+
+        function deleteEntry() {
+            values = this.getElementsByTagName('td')
+            console.log(values)
+            document.getElementById('delete').value = 'True'
+            let name = values[0].innerHTML
+            let CIDate = values[2].innerHTML
+            let CODate = values[3].innerHTML
+            let CITIme = values[4].innerHTML
+            document.getElementById('Name').value = name
+            document.getElementById('CIDate').value = CIDate
+            document.getElementById('CODate').value = CODate
+            document.getElementById('CITime').value = CITIme
+
+            var result = confirm(`Are you sure you would like to delete this entry-(name=${name}, Clock In Date${CIDate}, Clock Out Date ${CODate}, Clock In Time ${CITIme}). This Action cannot be undone`);
+            if (result) {
+                document.getElementById('formdelete').submit()
+            }
+        }
+
+        function milliToTime(milliseconds) {
+
+            let seconds = (milliseconds / 1000) % 60;
+            let minutes = ((milliseconds / (1000 * 60)) % 60);
+            let hours = ((milliseconds / (1000 * 60 * 60)) % 24);
+            let days = ((milliseconds / (1000 * 60 * 60 * 24)))
+            return `${Math.round(days) === 1 ? Math.round(days) + ' Day-  ' : Math.round(days) + ' Days-  '} ${Math.round(hours) < 10 ? "0" + Math.round(hours) : Math.round(hours)} : ${Math.round(minutes) < 10 ? "0" + Math.round(minutes) : Math.round(minutes)} :${Math.round(seconds) < 10 ? "0" + Math.round(seconds) : Math.round(seconds)}`
+        }
+
+        function changeSubmit() {
+            let val = document.getElementsByClassName("sortVal");
+            let sortBy = document.getElementById('sort');
+            switch (sortBy.value) {
+                case 'House':
+                    document.getElementById("sortVal1").value = val[0].value;
+                    break;
+                {#case 'Date':#}
+                {#    document.getElementById("sortVal1").value = val[1].value;#}
+                {#    break;#}
+                case 'Name':
+                    var str = ''
+                    var chips = document.querySelector(".chips").children;
+                    console.log(chips)
+                    for (let i = 0; i < chips.length; i++) {
+                        let chip = chips[i].firstChild.textContent
+                        str += chip + ", "
+                    }
+                    document.getElementById('sortVal1').value = str
+
+                    break;
+            }
+        }
+
+        function changeForm() {
+            let inputs = document.getElementById('controls').getElementsByTagName('*')
+            for (let i = 0; i < inputs.length; i++) {
+                inputs[i].setAttribute('hidden', "")
+            }
+            let value = this.value;
+            console.log(value)
+            switch (value) {
+                case 'House':
+                    document.getElementById('house').removeAttribute('hidden')
+                    document.getElementById('houseL').removeAttribute('hidden')
+                    break;
+                case 'Date':
+                    document.getElementById('date').removeAttribute('hidden')
+                    document.getElementById('dateL').removeAttribute('hidden')
+                    break;
+                case 'Name':
+                    var name = document.getElementById('name')
+                    name.removeAttribute('hidden')
+                    let nameInner = name.querySelectorAll('.chips')[0]
+                    nameInner.removeAttribute('hidden')
+                    document.getElementById('nameL').removeAttribute('hidden')
+                    break;
+            }
+        }
+
+        hoursBtn.addEventListener("click", getHours);
+        document.getElementById('sort').addEventListener("change", changeForm);
+        document.getElementById('sub').addEventListener("click", changeSubmit);
+
+    </script>
+{% endblock %}

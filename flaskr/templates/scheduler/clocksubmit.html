@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block content %}
+    {% if CICO == 'CI' %}
+        <h2>Successfully Clocked in {{ name }} at: {{ time }}</h2>
+    {% else %}
+        <h2>Successfully Clocked out {{ name }} at: {{ time }}</h2>
+    {% endif %}
+    <a href={{ url_for('main_page.landing') }}>Home</a>
+{% endblock %}

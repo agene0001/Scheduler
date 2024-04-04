@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block content %}
+    <div id="table1">
+    <table class="table table-bordered table-striped">
+        <thead>
+            <th>Ended</th>
+            <th>Name</th>
+            <th>House</th>
+            <th>Clock In Day</th>
+            <th>Clock In Time</th>
+            <th>Clock Out Day</th>
+            <th>Clock Out Time</th>
+        </thead>
+        <tbody>
+            {% for i in dict %}
+                <tr>
+                    <td>
+                        {% if i['CICO']=='CO'  %}
+                        yes
+                        {% else %}
+                        no
+                        {% endif %}
+                    </td>
+                    <td>{{ i['Name'] }}</td>
+                    <td>{{ i['House'] }}</td>
+                    <td>{{ i['CIDay'] }}</td>
+                    <td>{{ i['CItime'] }}</td>
+                    <td>{{ i['CODay'] }}</td>
+                    <td>{{ i['COtime'] }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+{% endblock %}
