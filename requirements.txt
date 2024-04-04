@@ -1,6 +1,7 @@
 blinker==1.6.2
 certifi==2023.5.7
 charset-normalizer==3.2.0
+openpyxl==3.1.2
 click==8.1.5
 colorama==0.4.6
 Flask==2.3.2
@@ -13,4 +14,4 @@ requests==2.31.0
 urllib3==2.0.3
 waitress==2.1.2
 Werkzeug==2.3.6
-openpyxl==3.0.1
+xlsxwriter == 3.2.0

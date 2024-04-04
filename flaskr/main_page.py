@@ -9,7 +9,7 @@ from werkzeug.utils import secure_filename
 from xlsxwriter import Workbook
 from flask import (
     Blueprint, flash, g, redirect, render_template, request, session, url_for, jsonify, json, Response, current_app,
-    make_response, send_file
+     send_file
 )
 from flaskr.db import get_db
 from openpyxl import Workbook
@@ -302,8 +302,8 @@ def chartComplete():
     wb.makeHealthChart()
     wb.addVals(days, session['initials'], session['clientName'])
     wb.save()
-
-    return render_template('admin/chartCompletePage.html')
+    flash('Chart Complete')
+    return redirect(url_for('main_page.homeAidChart'))
 
 
 @bp.route('/homeAidChartDays', methods=('GET', 'POST'))
