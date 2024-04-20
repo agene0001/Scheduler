@@ -62,6 +62,11 @@ def turtle(f):
             b[i] = max(0, f[i] + b[i + 1], f[i] + f[i + 1] + b[i + 2])
 
     return config, b, f
+class ListNode:
+    def __init__(self, val=0, next=None):
+        self.val = val
+        self.next = next
+# def mergeKLists(self, lists: List[Optional[ListNode]]) -> Optional[ListNode]:
 
 
 if __name__ == '__main__':

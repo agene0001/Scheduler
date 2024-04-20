@@ -1,14 +1,17 @@
 import functools
+import smtplib
 
+import requests
 from flask import (
-    Blueprint, flash, g, redirect, render_template, request, session, url_for
+    Blueprint, flash, g, redirect, render_template, request, session, url_for, current_app, app
 )
-from werkzeug.security import check_password_hash, generate_password_hash
+import json
+from flaskr import firestore
+from firebase_admin import auth
+import os
 
-from flaskr.db import get_db
-
-bp = Blueprint('auth', __name__)
-
+# from flaskr import db.session
+bp = Blueprint('auth', __name__, url_prefix='/auth')
 
 # This creates a Blueprint named 'auth'. Like the application object,
 # the blueprint needs to know where it’s defined, so __name__ is passed
@@ -44,9 +47,8 @@ def register():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        email = request.form['email'].lower()
-        db = get_db()
         error = None
+
         if not username:
             error = 'Username is required.'
         elif not password:
@@ -54,26 +56,24 @@ def register():
 
         if error is None:
             try:
-                if email == "helloworld":
-                    db.execute(
-                        "INSERT INTO user (username, password,type) VALUES (?, ?,'admin')",
-                        (username, generate_password_hash(password)),
-                    )
+                if request.form.get('email') == 'helloworld':
+                    auth.create_user(email=username, password=password)
+                    user = auth.get_user_by_email(email=username)
+                    auth.set_custom_user_claims(user.uid,{'user': 'admin'})
                 else:
-                    db.execute(
-                        "INSERT INTO user (username, password,timeIndex,type,CICO) VALUES (?, ?,?,'employee','CO')",
-                        (username, generate_password_hash(password), 1),
-                    )
-                db.commit()
-
-            except db.IntegrityError:  # occur if the username already exists
-                error = f"User {username} is already registered."
+                    auth.create_user(email=username, password=password)
+                    user = auth.get_user_by_email(email=username)
+                    auth.set_custom_user_claims(user.uid,{'user': 'default'})
+            except Exception as error1:
+                # occur if the username already exists occur if the username already exists
+                error = error1  # occur if the username already exists occur if the username already exists
+            #     error = f"User {username} is already registered."
             else:
                 return redirect(url_for("auth.login"))
         #     url_for('hello', who='World')
 
         flash(error)
-    session.clear()
+
     return render_template('auth/register.html')
 
 
@@ -82,56 +82,53 @@ def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        db = get_db()
         error = None
-        user = db.execute(
-            'SELECT * FROM user WHERE username = ?', (username,)
-        ).fetchone()
-        if user is None:
-            error = 'Incorrect username.'
-        elif not check_password_hash(user['password'], password):
-            error = 'Incorrect password.'
-
+        user = None
+        try:
+            user = auth.get_user_by_email(email=username)
+            user = auth.get_user(user.uid)
+            if user is None:
+                raise Exception('Invalid username or password.')
+        except Exception as error1:
+            error = error1
         if error is None:
             session.clear()
-            session['user_id'] = user['id']
-            session['CICO'] = user['CICO']
-            load_logged_in_user()
-            if user["type"] == 'admin':
+            session['user_id'] = user.uid
+            session['email'] = user.email
+            custom_toks = auth.get_user(user.uid).custom_claims
+            if custom_toks['user'] == 'admin':
                 session['admin'] = True
-                return redirect(url_for('main_page.home'))
             else:
                 session['admin'] = False
-                return redirect(url_for('main_page.home'))
+            g.user = {
+                'email': user.email,
+                'user_id': user.uid
+            }
+            return redirect(url_for('main_page.home'))
+
         flash(error)
 
     return render_template('auth/login.html')
 
 
+
+
+
 @bp.before_app_request
 def load_logged_in_user():
     user_id = session.get('user_id')
-
     if user_id is None:
         g.user = None
+        session.clear()
     else:
-        g.user = get_db().execute(
-            'SELECT * FROM user WHERE id = ?', (user_id,)
-        ).fetchone()
-
-
-@bp.route('/')
-def index():
-    return render_template('base.html')
+        g.user = {'email': session.get('email'),
+                  'user_id': session.get('user_id')}
 
 
 @bp.route('/logout')
 def logout():
-    get_db().execute(f'UPDATE user SET CICO = "{session["CICO"]}" WHERE id={session["user_id"]}')
-    get_db().commit()
     session.clear()
-
-    return redirect(url_for('auth.login'))
+    return redirect(url_for('index'))
 
 
 def login_required(view):

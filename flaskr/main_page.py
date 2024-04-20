@@ -11,11 +11,12 @@ from flask import (
     Blueprint, flash, g, redirect, render_template, request, session, url_for, jsonify, json, Response, current_app,
      send_file
 )
-from flaskr.db import get_db
+# from flaskr.db import get_db
 from openpyxl import Workbook
-
+from flaskr import db
 wb = Workbook()
 bp = Blueprint('main_page', __name__)
+
 
 
 @bp.route("/clockin-clockout")
@@ -23,37 +24,6 @@ bp = Blueprint('main_page', __name__)
 def clockin():
     return render_template("scheduler/clock_in_out.html")
 
-
-@bp.route("/calendar", methods=('GET', 'POST'))
-@login_required
-def fullCalendar():
-    db = get_db()
-    if request.method == 'POST':
-        delete = request.form.get('delete')
-        editW = request.form.get('editW')
-        start = request.form.get('start')
-        title = request.form.get('title')
-        editT = request.form.get('editT')
-        end = request.form.get('end')
-        if delete is not None:
-            db.execute('DELETE FROM events WHERE title=? AND start=? AND end=?', (delete.lower(), start, end))
-            db.commit()
-        elif editW is not None:
-            db.execute('UPDATE events SET occupied=? WHERE start=? AND title=? AND end=?',
-                       (editW, start, title.lower(), end))
-            db.commit()
-        elif editT is not None:
-            db.execute('UPDATE events SET title=? WHERE title=? AND start=? AND end=?', (editT, title.lower(), start, end))
-            db.commit()
-        else:
-            title = request.form['name']
-            start = request.form['starttime']
-            end = request.form['endtime']
-            props = "Nobody"
-            db.execute('INSERT INTO events(title,start,end,occupied) VALUES (?,?,?,?)', (title, start, end, props))
-        db.commit()
-    events = db.execute('SELECT * FROM events').fetchall()
-    return render_template("admin/fullCalendar.html", events=events)
 
 
 @bp.route("/clocksubmitpage", methods=('GET', 'POST'))
@@ -96,7 +66,7 @@ def clocksubmit():
 @bp.route('/timesheet')
 @login_required
 def timesheet():
-    db = get_db()
+    # db = get_db()
     timesheets = db.execute('SELECT * FROM timeCards WHERE time_id=?', (session['user_id'],)).fetchall()
     return render_template('scheduler/timesheet.html', dict=timesheets)
 
@@ -120,7 +90,7 @@ def landingA():
 @bp.route('/landing')
 @login_required
 def home():
-    if session['admin'] == True:
+    if session['admin']:
         return landingA()
     else:
         return landing()

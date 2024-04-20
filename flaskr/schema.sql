@@ -32,7 +32,8 @@ CREATE TABLE timeCards
 
 CREATE TABLE charts
 (
-    chart_id   INTEGER REFERENCES user (id),
+    chart_id INTEGER,
+    FOREIGN KEY (chart_id) REFERENCES user (id),
     resident   TEXT NOT NULL,
     roomNum    INTEGER,
     dateSigned TEXT NOT NULL

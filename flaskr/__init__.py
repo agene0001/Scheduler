@@ -1,7 +1,16 @@
 import os
 
 from flask import Flask, render_template, session, app, Response, redirect
-
+from firebase_admin import credentials, firestore, initialize_app
+import json
+# with open('./instance/firebaseConfig.json') as f:
+#     config = json.load(f)
+# initialize_app(config)
+# Initialize Firestore DB
+cred = credentials.Certificate('./instance/key.json')
+default_app = initialize_app(cred)
+db = firestore.client()
+todo_ref = db.collection('todos')
 
 # to run flask --app flaskr run --debug
 def create_app(test_config=None, instance_relative_config=True):
@@ -28,18 +37,21 @@ def create_app(test_config=None, instance_relative_config=True):
         pass
 
     # a simple page that says hello
-    from . import db
-    db.init_app(app)
+    @app.route('/')
+    def index():
+        return render_template('base.html')
 
     from . import auth
     app.register_blueprint(auth.bp)
-
+    from . import fullcalender
+    app.register_blueprint(fullcalender.bp)
     from . import main_page
     app.register_blueprint(main_page.bp)
 
-    @app.errorhandler(Exception)
-    def page_not_found(e):
-        return render_template('error.html', code=e.code)
+    # @app.errorhandler(Exception)
+    # def page_not_found(e):
+    #     print(e)
+    #     return render_template('error.html', code=e.code)
 
     return app
 
