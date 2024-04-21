@@ -82,26 +82,25 @@
                 {#    console.log(info.event.extendedProps);#}
                 {#    // {description: "Lecture", department: "BioChemistry"}#}
                 {# },#}
-            dayGrid:{
-                eventMouseEnter: function (info) {
-                    let para = document.createElement('p')
-                    let text = document.createTextNode(`${info.event.extendedProps.description}`)
-                    para.appendChild(text)
-                    para.style.color = '#ffffff'
-                    let zind = info.el.style.zIndex
-                    para.setAttribute('class', 'popupinfo')
-                    para.setAttribute('data-ind', zind)
-                    this.
-                    info.el.appendChild(para)
-                    info.el.style.zIndex = '10'
+                dayGrid: {
+                    eventMouseEnter: function (info) {
+                        let para = document.createElement('p')
+                        let text = document.createTextNode(`${info.event.extendedProps.description}`)
+                        para.appendChild(text)
+                        para.style.color = '#ffffff'
+                        let zind = info.el.style.zIndex
+                        para.setAttribute('class', 'popupinfo')
+                        para.setAttribute('data-ind', zind)
+                        this.info.el.appendChild(para)
+                        info.el.style.zIndex = '10'
+                    },
+                    eventMouseLeave: function (info) {
+                        let para = document.querySelector('.popupinfo')
+                        let zind = para.dataset.ind
+                        info.el.style.zIndex = zind
+                        info.el.removeChild(para)
+                    },
                 },
-                eventMouseLeave: function (info) {
-                    let para = document.querySelector('.popupinfo')
-                    let zind = para.dataset.ind
-                    info.el.style.zIndex = zind
-                    info.el.removeChild(para)
-                },
-            },
                 eventClick: function (info) {
                     bootbox.prompt({
                         message: 'Description : ' + info.event.extendedProps.description,
@@ -134,7 +133,11 @@
                                             xhttp.open("POST", "/calendar");
                                             xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
                                             xhttp.send(`delete=${info.event.title}&start=${info.event.start.getTime()}&end=${info.event.end.getTime()}`);
+
                                             info.event.remove()
+                                            setTimeout(() => {
+                                                window.location.reload()
+                                            }, 100)
                                         }
                                     });
                             } else if (result === 'EditW') {
@@ -199,22 +202,22 @@
                                     let dateObj = new Date(info.date)
                                     dateObj.setHours(parseInt(result1.split(':')[0]))
                                     dateObj.setMinutes(parseInt(result1.split(':')[1]))
-                                        bootbox.prompt({
-                                            title: 'How Many Hours',
-                                            inputType: 'number',
-                                            callback: function (result2) {
-                                                if (result2 === null || result2 === '') {
-                                                    return
-                                                }
-                                                xhttp.open("POST", "/calendar");
-                                                xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-                                                let end = addHours(new Date(dateObj), result2)
-                                                xhttp.send(`name=${result}&starttime=${dateObj.getTime()}&endtime=${end.getTime()}`);
-                                                setTimeout(() => {
-                                                    window.location.reload()
-                                                }, 100)
+                                    bootbox.prompt({
+                                        title: 'How Many Hours',
+                                        inputType: 'number',
+                                        callback: function (result2) {
+                                            if (result2 === null || result2 === '') {
+                                                return
                                             }
-                                        })
+                                            xhttp.open("POST", "/calendar");
+                                            xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                                            let end = addHours(new Date(dateObj), result2)
+                                            xhttp.send(`name=${result}&starttime=${dateObj.getTime()}&endtime=${end.getTime()}`);
+                                            setTimeout(() => {
+                                                window.location.reload()
+                                            }, 100)
+                                        }
+                                    })
 
 
                                 }
@@ -232,12 +235,11 @@
                     {#    }#}
                     {# });#}
                 }
-                })
+            })
 
             let events = calendar.getEvents()
             calendar.render();
-            })
-
+        })
 
 
     </script>

@@ -7,10 +7,6 @@
             <input hidden type="text" id="CI/CO" name="ci-co" required>
         </div>
         <div>
-            <label for="name">Enter Full Name:</label>
-            <input type="text" id="name" name="name" required>
-        </div>
-        <div>
             <label for="house">House</label>
             <select name="house" id="house">
                 <option value="Rhode Island">Rhode Island</option>
@@ -64,5 +60,5 @@
     {% if result %}
         <p>{{ result }}</p>
     {% endif %}
-    <a href={{ url_for('main_page.landing') }}>Home</a>
+    <a href={{ url_for('main_page.home') }}>Home</a>
 {% endblock %}

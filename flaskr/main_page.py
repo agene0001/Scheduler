@@ -9,14 +9,15 @@ from werkzeug.utils import secure_filename
 from xlsxwriter import Workbook
 from flask import (
     Blueprint, flash, g, redirect, render_template, request, session, url_for, jsonify, json, Response, current_app,
-     send_file
+    send_file
 )
 # from flaskr.db import get_db
 from openpyxl import Workbook
 from flaskr import db
+from flaskr.models import Charts, TimeCards
+
 wb = Workbook()
 bp = Blueprint('main_page', __name__)
-
 
 
 @bp.route("/clockin-clockout")
@@ -24,6 +25,12 @@ bp = Blueprint('main_page', __name__)
 def clockin():
     return render_template("scheduler/clock_in_out.html")
 
+
+def getTimecards(user_id):
+    # event1 =db.collection('events').get()
+    # print(event1[0].to_dict())
+    events = db.collection('timeCards').where("timeId", "==", user_id).order_by('data.CIDay').stream()
+    return events
 
 
 @bp.route("/clocksubmitpage", methods=('GET', 'POST'))
@@ -36,29 +43,39 @@ def clocksubmit():
             date = time1[0].strip()
             day = int("".join(date.split("/")))
             CI_CO = request.form['ci-co']
-            name = request.form['name'].lower()
+            name = session['name'].lower()
             house = request.form['house'].lower()
             session['CICO'] = request.form['ci-co']
-            db = get_db()
 
-            tups = db.execute('SELECT * FROM user WHERE id=?', (session.get('user_id'),)).fetchall()
-            ind = tups[0]['timeIndex']
+            # tups = db.execute('SELECT * FROM user WHERE id=?', (session.get('user_id'),)).fetchall()
             if session['CICO'] == 'CI':
-                db.execute(
-                    'INSERT INTO timeCards (time_id,name,house,dayNum,CICO,timeIndex,CIDay,CITime) VALUES (?,?,?,?,?,?,?,?)',
-                    (session.get('user_id'), name, house, day, CI_CO, ind, date, time.strip()))
+                card = TimeCards(name=name, house=house, dayNum=day, CIDay=date,
+                                 CItime=time.strip(), timeId=session.get('user_id'))
+                db.collection('timeCards').document().set(card.to_dict())
+                # db.execute(
+                #     'INSERT INTO timeCards (time_id,name,house,dayNum,CICO,timeIndex,CIDay,CITime) VALUES (?,?,?,?,?,?,?,?)',
+                #     (session.get('user_id'), name, house, day, CI_CO, ind, date, time.strip()))
                 # 'cards(id, ind, COday, dayNum, COtime) VALUES(?, ?, ?, ?, ?, ?)'(
             else:
-                db.execute('UPDATE timeCards SET CICO=?, CODay=?, COtime=? WHERE time_id=? AND timeIndex=?',
-                           (CI_CO, date, time.strip(), session.get('user_id'), ind))
-                db.execute('UPDATE user SET timeIndex=?, CICO=? WHERE id=?', (ind + 1, CI_CO, session.get('user_id')))
-            db.commit()
+                docs = getTimecards(session.get('user_id'))  # for a better understanding check PEP 448
+                # print(last)
+                for doc in docs:
+                    print(doc.to_dict())
+                    docMax = doc
+
+                docMax.reference.update({'data.CODay': date, 'data.COtime': time})
+                # doc.update({'CODay':date,'COtime':time.strip()})
+                # db.collection('timeCards').document().update({'name':name})
+                # db.execute('UPDATE timeCards SET CICO=?, CODay=?, COtime=? WHERE time_id=? AND timeIndex=?',
+                #            (CI_CO, date, time.strip(), session.get('user_id'), ind))
+                # db.execute('UPDATE user SET timeIndex=?, CICO=? WHERE id=?', (ind + 1, CI_CO, session.get('user_id')))
+            # db.commit()
             return render_template("scheduler/clocksubmit.html", time=time, CICO=CI_CO, name=name, house=house)
         else:
             if request.form['ci-co'] == 'CI':
                 flash("Can't Clock you in as you are already clocked in")
             else:
-                flash("Can't CLock you out as you are already clocked out")
+                flash("Can't Clock you out as you are already clocked out")
             return redirect(request.url)
     return render_template('scheduler/clock_in_out.html')
 
@@ -67,14 +84,13 @@ def clocksubmit():
 @login_required
 def timesheet():
     # db = get_db()
-    timesheets = db.execute('SELECT * FROM timeCards WHERE time_id=?', (session['user_id'],)).fetchall()
+    timesheets = db.collection('timeCards').where('timeId', '==', session.get('user_id')).order_by('timeId').stream()
+    timesheets = [doc.to_dict()['data'] for doc in timesheets]
     return render_template('scheduler/timesheet.html', dict=timesheets)
-
 
 
 def landing():
     return render_template("scheduler/landing.html")
-
 
 
 def landingA():
@@ -100,50 +116,58 @@ def home():
 @login_required
 def schedule():
     if request.method == 'POST':
-        db = get_db()
+        # db = get_db()
         if request.form.get('delete') == 'True':
-            name = request.form.get('delete.name').strip()
+            name = request.form.get('delete.name').lower().strip()
             CIDate = request.form.get('delete.CIDate').strip()
             CODate = request.form.get('delete.CODate').strip()
             CITime = request.form.get('delete.CITime').strip()
-            results = db.execute('SELECT * FROM timeCards WHERE name = ? AND CIDay = ? AND CODay = ? AND CItime = ?',
-                                 (name, CIDate, CODate, CITime)).fetchall()
+            timeId = request.form.get('delete.timeId').strip()
+            results = db.collection('timeCards').where("name", "==", name).stream()
+            # results = db.execute('SELECT * FROM timeCards WHERE name = ? AND CIDay = ? AND CODay = ? AND CItime = ?',
+            #                      (name, CIDate, CODate, CITime)).fetchall()
             if not results:
                 flash('Invalid Timecard')
                 return redirect(request.url)
             else:
-                db.execute('DELETE FROM timeCards WHERE name = ? AND CIDay = ? AND CODay = ? AND CItime = ?',
-                           (name, CIDate, CODate, CITime))
-                db.commit()
+                for result in results:
+                    data = result.to_dict()
+
+                    if data['name'] == name and data['data']['CIDay'] == CIDate and data['data']['CODay'] == CODate and data['data']['CItime'] == CITime:
+                        result.reference.delete()
+                # db.execute('DELETE FROM timeCards WHERE name = ? AND CIDay = ? AND CODay = ? AND CItime = ?',
+                #            (name, CIDate, CODate, CITime))
+                # db.commit()
                 flash('Complete')
                 return render_template('admin/schedules.html')
-        elif request.form.get('add') == 'True':
-            name = request.form.get('add.name').strip()
-            CIDate = request.form.get('add.CIDate').strip()
-            CODate = request.form.get('add.CODate').strip()
-            CITime = request.form.get('add.CITime').strip()
-            COTime = request.form.get('add.COTime').strip()
-            house = request.form.get('add.house').strip().lower()
-
-            date = CIDate.split('-')
-            COdate = CODate.split('-')
-            temp = date[0]
-            temp1 = COdate[0]
-            COdate[0] = COdate[1]
-            COdate[1] = COdate[2]
-            COdate[2] = temp1
-            date[0] = date[1]
-            date[1] = date[2]
-            date[2] = temp
-            CIDate = '/'.join(date)
-            CODate = '/'.join(COdate)
-            daynum = int(''.join(date))
-            db.execute(
-                'INSERT INTO timeCards(name,CIDay,CODay,CItime,COtime,dayNum,house,CICO) VALUES (?,?,?,?,?,?,?,?)',
-                (name, CIDate, CODate, CITime, COTime, daynum, house, 'CO'))
-            db.commit()
-            flash('Complete')
-            return render_template('admin/schedules.html')
+        # elif request.form.get('add') == 'True':
+        #     name = request.form.get('add.name').strip()
+        #     CIDate = request.form.get('add.CIDate').strip()
+        #     CODate = request.form.get('add.CODate').strip()
+        #     CITime = request.form.get('add.CITime').strip()
+        #     COTime = request.form.get('add.COTime').strip()
+        #     house = request.form.get('add.house').strip().lower()
+        #
+        #     date = CIDate.split('-')
+        #     COdate = CODate.split('-')
+        #     temp = date[0]
+        #     temp1 = COdate[0]
+        #     COdate[0] = COdate[1]
+        #     COdate[1] = COdate[2]
+        #     COdate[2] = temp1
+        #     date[0] = date[1]
+        #     date[1] = date[2]
+        #     date[2] = temp
+        #     CIDate = '/'.join(date)
+        #     CODate = '/'.join(COdate)
+        #     daynum = int(''.join(date))
+        #     card = TimeCards(name=name, house=house, dayNum=daynum, CIDay=CIDate,CODay=CODate, CItime=CITime, timeId=session.get('user_id'))
+        #     db.execute(
+        #         'INSERT INTO timeCards(name,CIDay,CODay,CItime,COtime,dayNum,house,CICO) VALUES (?,?,?,?,?,?,?,?)',
+        #         (name, CIDate, CODate, CITime, COTime, daynum, house, 'CO'))
+        #     db.commit()
+        #     flash('Complete')
+        #     return render_template('admin/schedules.html')
         sortBy = request.form['sort']
         val = request.form['value']
         days = request.form['filter'].split("-")
@@ -155,36 +179,48 @@ def schedule():
         tups = ()
         match sortBy:
             case 'House':
-                val = val.lower()
-                tups = db.execute('SELECT * FROM timeCards WHERE house=? AND dayNum>=? AND CICO=? ORDER BY time_id',
-                                  (val, dayNum, 'CO')).fetchall()
-            case 'Date':
-                vals = val.split('-')
-                temp = vals[0]
-                vals[0] = vals[1]
-                vals[1] = vals[2]
-                vals[2] = temp
-                val = '/'.join(vals)
-                tups = db.execute('SELECT * FROM timeCards WHERE day=? AND dayNum>=? AND CICO=? ORDER BY name',
-                                  (val, dayNum, 'CO')).fetchall()
+                house = val.lower()
+                docs = db.collection('timeCards').get()
+                for doc in docs:
+                    docData = doc.to_dict()
+                    if docData['data']['house'] == house and docData['data']['dayNum'] >= dayNum:
+                        tups += (docData['data'] | {'name': docData['name']},)
+                # tups = db.execute('SELECT * FROM timeCards WHERE house=? AND dayNum>=? AND CICO=? ORDER BY time_id',
+                #                   (val, dayNum, 'CO')).fetchall()
+
+                # tups = db.execute('SELECT * FROM timeCards WHERE day=? AND dayNum>=? AND CICO=? ORDER BY name',
+                #                   (val, dayNum, 'CO')).fetchall()
             case 'Name':
                 val = val.lower()
                 names = val.split(', ')
-                str = 'SELECT * FROM timeCards WHERE '
-                tup = (dayNum,)
-                for i in range(len(names)):
-                    tup = (names[i],) + tup
-                    if i == 0:
-                        str += '(name LIKE ? '
-                    else:
-                        str += 'OR name LIKE ? '
-                tup += ("CO",)
-                str += ') AND dayNum>=? AND CICO=? ORDER BY name'
-                tups = db.execute(str,
-                                  tup).fetchall()
+                docs = db.collection('timeCards').get()
+                for doc in docs:
+                    data = doc.to_dict()
+                    if data['name'] in names and data['data']['dayNum'] >= dayNum:
+                        tups += (data['data'] | {'name': data['name']},)
+                # str = 'SELECT * FROM timeCards WHERE '
+                # tup = (dayNum,)
+                # for i in range(len(names)):
+                #     tup = (names[i],) + tup
+                #     if i == 0:
+                #         str += '(name LIKE ? '
+                #     else:
+                #         str += 'OR name LIKE ? '
+                # tup += ("CO",)
+                # str += ') AND dayNum>=? AND CICO=? ORDER BY name'
+                # tups = db.execute(str,
+                #                   tup).fetchall()
             case 'Everything':
-                tups = db.execute('SELECT * FROM timeCards WHERE dayNum>= ? AND CICO=? ORDER BY name',
-                                  (dayNum, 'CO')).fetchall()
+                tups = db.collection('timeCards').get()
+                tups = list(map(lambda card: card.to_dict(), tups))
+                lis = []
+                for i in tups:
+                    # print(i['data']['dayNum'])
+                    if i['data']['dayNum'] >= dayNum:
+                        lis.append(i['data'] | {'name': i['name']})
+                tups = lis
+                # tups = db.execute('SELECT * FROM timeCards WHERE dayNum>= ? AND CICO=? ORDER BY name',
+                #                   (dayNum, 'CO')).fetchall()
         return render_template("admin/schedules.html", vals=tups)
     return render_template("admin/schedules.html")
 

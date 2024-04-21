@@ -59,11 +59,11 @@ def register():
                 if request.form.get('email') == 'helloworld':
                     auth.create_user(email=username, password=password)
                     user = auth.get_user_by_email(email=username)
-                    auth.set_custom_user_claims(user.uid,{'user': 'admin'})
+                    auth.set_custom_user_claims(user.uid,{'user': 'admin','name':request.form.get('name'),'CICO':'CO'})
                 else:
                     auth.create_user(email=username, password=password)
                     user = auth.get_user_by_email(email=username)
-                    auth.set_custom_user_claims(user.uid,{'user': 'default'})
+                    auth.set_custom_user_claims(user.uid,{'user': 'default','name':request.form.get('name'),'CICO':'CO'})
             except Exception as error1:
                 # occur if the username already exists occur if the username already exists
                 error = error1  # occur if the username already exists occur if the username already exists
@@ -96,13 +96,15 @@ def login():
             session['user_id'] = user.uid
             session['email'] = user.email
             custom_toks = auth.get_user(user.uid).custom_claims
+            session['CICO'] = custom_toks['CICO']
             if custom_toks['user'] == 'admin':
                 session['admin'] = True
             else:
                 session['admin'] = False
+            session['name'] = custom_toks['name']
             g.user = {
                 'email': user.email,
-                'user_id': user.uid
+                'user_id': user.uid,
             }
             return redirect(url_for('main_page.home'))
 

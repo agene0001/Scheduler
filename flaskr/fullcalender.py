@@ -1,5 +1,4 @@
 from google.cloud.firestore_v1 import FieldFilter
-
 from flaskr.auth import login_required
 from flask import (
     Blueprint, render_template, request
@@ -12,44 +11,18 @@ bp = Blueprint('full_calender', __name__)
 import uuid
 
 
-class Event:
-    def __init__(self, title, start, end, uid, occupied='Nobody'):
-        self.title = title
-        self.start = start
-        self.end = end
-        self.occupied = occupied
-        self.uid = uid
-
-    # @staticmethod
-    # def from_dict(source):
-    #     # ...
-
-    def to_dict(self):
-        return {'title': self.title,
-                'start': self.start,
-                'end': self.end,
-                'occupied': self.occupied,
-                'uid': self.uid
-                }
-
-    # def __repr__(self):
-    #     return f"City(\
-    #             name={self.name}, \
-    #             country={self.country}, \
-    #             population={self.population}, \
-    #             capital={self.capital}, \
-    #             regions={self.regions}\
-    #         )"
-
+from flaskr.models import Event
 
 def getEvent(title, start, end):
     # event1 =db.collection('events').get()
     # print(event1[0].to_dict())
-    events = db.collection('events').where("title", "==", title.lower().strip()).stream()
-
+    print(title.lower().strip())
+    print(list(map(lambda event: event.to_dict(),db.collection('events').get())))
+    events = db.collection('events').where("title", "==", title.lower().strip()).order_by('CIDay').stream()
     lis = []
     for event in events:
         event1 = event.to_dict()
+        print(event1)
         if event1['start'] == start and event1['end'] == end:
             lis.append(event)
     return lis
@@ -100,7 +73,7 @@ def fullCalendar():
             title = request.form['name']
             start = request.form['starttime']
             end = request.form['endtime']
-            event = Event(title.lower(), start, end)
+            event = Event(title.lower().strip(), start, end)
             db.collection('events').document().set(event.to_dict())
             # db.execute('INSERT INTO events(title,start,end,occupied) VALUES (?,?,?,?)', (title, start, end, props))
         # db.commit()

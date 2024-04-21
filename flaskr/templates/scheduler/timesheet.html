@@ -21,8 +21,8 @@
                         no
                         {% endif %}
                     </td>
-                    <td>{{ i['Name'] }}</td>
-                    <td>{{ i['House'] }}</td>
+                    <td>{{ session.get('name')|capitalize }}</td>
+                    <td>{{ i['house'] }}</td>
                     <td>{{ i['CIDay'] }}</td>
                     <td>{{ i['CItime'] }}</td>
                     <td>{{ i['CODay'] }}</td>

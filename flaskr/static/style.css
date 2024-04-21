@@ -44,6 +44,9 @@ th, tr, td {
 
 form {
     align-items: center;
+    padding: 30px;
+    margin: 20px;
+    display: block;
 }
 
 
@@ -258,3 +261,7 @@ input[type=submit] {
     -ms-transform: translateY(-50%);
     transform: translateY(-50%);
 }
+
+/*.control-form{*/
+/*    display:none;*/
+/*}*/
