@@ -14,7 +14,7 @@
     <div class="collapse navbar-collapse justify-content-end" id="navbarSupportedContent">
         <ul class="navbar-nav nav-pills">
             {% if g.user %}
-                <li><span>{{ g.user['username'] }}</span>
+                <li><span>{{ g.user['email'] }}</span>
 
                 <li class="nav-item">
                     <a class="nav-link {% if request.endpoint is not none and request.endpoint==url_for('auth.logout') %} active{% endif %}"

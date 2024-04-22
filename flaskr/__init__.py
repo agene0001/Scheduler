@@ -2,6 +2,7 @@ import os
 
 from flask import Flask, render_template, session, app, Response, redirect
 from firebase_admin import credentials, firestore, initialize_app
+import logging
 import json
 # with open('./instance/firebaseConfig.json') as f:
 #     config = json.load(f)
@@ -11,6 +12,7 @@ cred = credentials.Certificate('./instance/key.json')
 default_app = initialize_app(cred)
 db = firestore.client()
 todo_ref = db.collection('todos')
+logging.basicConfig(level=logging.INFO)
 
 # to run flask --app flaskr run --debug
 def create_app(test_config=None, instance_relative_config=True):
@@ -21,7 +23,10 @@ def create_app(test_config=None, instance_relative_config=True):
         DATABASE=os.path.join(app.instance_path, 'flaskr.sqlite'),
         UPLOAD_FOLDER='charts'
     )
+    # logging.info(f"App instance path: {app.instance_path}")
+    os.makedirs(os.path.join(app.instance_path,'charts'), exist_ok=True)
 
+    # logging.info(f"charts instance path: {os.path.join(app.instance_path,'charts')}")
     if test_config is None:
         # load the instance config, if it exists, when not testing
         app.config.from_pyfile('config.py', silent=True)

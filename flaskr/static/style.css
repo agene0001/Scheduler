@@ -1,13 +1,13 @@
 html {
     font-family: sans-serif;
-    background: #eee;
+    background: #554348;
     padding: 1rem;
 }
 
 body {
     max-width: 1260px;
     margin: 0 auto;
-    background: white;
+    background: #D4F5F5;
 }
 
 h1 {
@@ -89,7 +89,7 @@ input[type=submit]:hover {
 
 
 nav {
-    background: lightgray;
+    background: #D0A98F;
     display: flex;
     align-items: center;
     padding: 0 0.5rem;

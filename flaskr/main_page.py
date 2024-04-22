@@ -133,7 +133,8 @@ def schedule():
                 for result in results:
                     data = result.to_dict()
 
-                    if data['name'] == name and data['data']['CIDay'] == CIDate and data['data']['CODay'] == CODate and data['data']['CItime'] == CITime:
+                    if data['name'] == name and data['data']['CIDay'] == CIDate and data['data']['CODay'] == CODate and \
+                            data['data']['CItime'] == CITime:
                         result.reference.delete()
                 # db.execute('DELETE FROM timeCards WHERE name = ? AND CIDay = ? AND CODay = ? AND CItime = ?',
                 #            (name, CIDate, CODate, CITime))
@@ -247,12 +248,12 @@ def download_file(filename):
 def list_files():
     if request.method == 'POST':
         if request.form.get('delete') is not None:
-            if os.path.exists(current_app.instance_path + '\\' + os.path.join(current_app.config['UPLOAD_FOLDER'],
-                                                                              request.form['delete'])):
-                os.remove(current_app.instance_path + '\\' + os.path.join(current_app.config['UPLOAD_FOLDER'],
-                                                                          request.form['delete']))
+            if os.path.exists(os.path.join(current_app.instance_path, current_app.config['UPLOAD_FOLDER'],
+                                           request.form['delete'])):
+                os.remove(os.path.join(current_app.instance_path, current_app.config['UPLOAD_FOLDER'],
+                                       request.form['delete']))
                 flash('Successful')
-                files = os.listdir(current_app.instance_path + '\\' + current_app.config['UPLOAD_FOLDER'])
+                files = os.listdir(os.path.join(current_app.instance_path, current_app.config['UPLOAD_FOLDER']))
                 return render_template('files.html', files=files)
             else:
                 flash('File doesnt exist')
@@ -264,9 +265,9 @@ def list_files():
             return redirect(request.url)
         if file:
             filename = secure_filename(file.filename)
-            file.save(current_app.instance_path + '\\' + os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
+            file.save(os.path.join(current_app.instance_path, current_app.config['UPLOAD_FOLDER'], filename))
     # Get a list of files in the uploads folder
-    files = os.listdir(current_app.instance_path + '\\' + current_app.config['UPLOAD_FOLDER'])
+    files = os.listdir(os.path.join(current_app.instance_path, current_app.config['UPLOAD_FOLDER']))
     return render_template('files.html', files=files)
 
 
@@ -360,7 +361,7 @@ class createWorkbooks():
                 cell.border = thin_border
 
         wb = Workbook()
-        ws = wb.get_active_sheet()
+        ws = wb.active
         # property cell.border should be used instead of cell.style.border
         ws.cell(row=3, column=2).border = thin_border
         # bolds
@@ -626,4 +627,4 @@ class createWorkbooks():
                         self.ws[letter + '50'] = initials.upper()
 
     def save(self):
-        wb.save(current_app.instance_path + '\\' + os.path.join(current_app.config['UPLOAD_FOLDER'], self.name))
+        wb.save(os.path.join(current_app.instance_path, current_app.config['UPLOAD_FOLDER'], self.name))
