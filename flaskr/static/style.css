@@ -16,17 +16,17 @@ body {
     max-width: 1260px;
     margin: 0 auto;
     border-radius:10px;
-    background: #FFEED6;
+    background: #A96E7C;
 }
 
 h1 {
     font-family: serif;
-    color: #7FFFD4;
+    color: #F0F2A6;
     margin: 1rem 0;
 }
 
 a {
-    color: #377ba8;
+    color: #F0F2A6;
 }
 
 hr {
@@ -98,7 +98,7 @@ input[type=submit]:hover {
 
 
 nav {
-    background: #368F8B;
+    background: #A96E7C;
     border-radius: 10px;
     display: flex;
     align-items: center;
