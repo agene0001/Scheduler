@@ -1,18 +1,27 @@
 html {
     font-family: sans-serif;
-    background: #554348;
+
+background: #BE93C5;  /* fallback for old browsers */
+background: -webkit-linear-gradient(to bottom, #7BC6CC, #BE93C5);  /* Chrome 10-25, Safari 5.1-6 */
+background: linear-gradient(to bottom, #7BC6CC, #BE93C5);
+
+    background-repeat: no-repeat;
+
+    background-attachment: fixed;
+/* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
     padding: 1rem;
 }
 
 body {
     max-width: 1260px;
     margin: 0 auto;
-    background: #D4F5F5;
+    border-radius:10px;
+    background: #FFEED6;
 }
 
 h1 {
     font-family: serif;
-    color: #377ba8;
+    color: #7FFFD4;
     margin: 1rem 0;
 }
 
@@ -89,7 +98,8 @@ input[type=submit]:hover {
 
 
 nav {
-    background: #D0A98F;
+    background: #368F8B;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     padding: 0 0.5rem;
