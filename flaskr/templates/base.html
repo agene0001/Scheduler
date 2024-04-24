@@ -7,40 +7,40 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
-    <body>
-    <header>
+<body>
+<header>
 
-        <nav class="navbar navbar-expand-lg container-fluid">
-            <h1>Scheduler</h1>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-                    data-bs-target="#navbarSupportedContent"
-                    aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse justify-content-end" id="navbarSupportedContent">
-                <ul class="navbar-nav nav-pills">
-                    {% if g.user %}
-                        <li><span>{{ g.user['email'] }}</span>
+    <nav class="navbar navbar-expand-lg container-fluid">
+        <h1>Scheduler</h1>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarSupportedContent"
+                aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-end" id="navbarSupportedContent">
+            <ul class="navbar-nav nav-pills">
+                {% if g.user %}
+                    <li><span>{{ g.user['email'] }}</span>
 
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.endpoint is not none and request.endpoint==url_for('auth.logout') %} active{% endif %}"
-                               href="{{ url_for('auth.logout') }}">Log Out</a>
-                        <li class="nav-item"><a
-                                class="nav-link {% if request.endpoint is not none and request.endpoint==url_for('main_page.home') %} active{% endif %}"
-                                href="{{ url_for('main_page.home') }}">Home</a>
-                            {% else %}
-                        <li class="nav-item"><a
-                                class="nav-link {% if request.endpoint is not none and request.endpoint==url_for('auth.register') %} active{% endif %}"
-                                href="{{ url_for('auth.register') }}">Register</a>
-                        <li class="nav-item ">
-                        <a class="nav-link{% if request.endpoint is not none and request.endpoint==url_for('auth.login') %} active{% endif %}"
-                           href="{{ url_for('auth.login') }}">Log In</a>
-                    {% endif %}
-                </ul>
-            </div>
-        </nav>
-        {% block header %}{% endblock %}
-    </header>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint is not none and request.endpoint==url_for('auth.logout') %} active{% endif %}"
+                           href="{{ url_for('auth.logout') }}">Log Out</a>
+                    <li class="nav-item"><a
+                            class="nav-link {% if request.endpoint is not none and request.endpoint==url_for('main_page.home') %} active{% endif %}"
+                            href="{{ url_for('main_page.home') }}">Home</a>
+                        {% else %}
+                    <li class="nav-item"><a
+                            class="nav-link {% if request.endpoint is not none and request.endpoint==url_for('auth.register') %} active{% endif %}"
+                            href="{{ url_for('auth.register') }}">Register</a>
+                    <li class="nav-item ">
+                    <a class="nav-link{% if request.endpoint is not none and request.endpoint==url_for('auth.login') %} active{% endif %}"
+                       href="{{ url_for('auth.login') }}">Log In</a>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+    {% block header %}{% endblock %}
+</header>
 <section class="content">
     {% for message in get_flashed_messages() %}
         <div class="flash">{{ message }}</div>
@@ -50,5 +50,5 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
             integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
             crossorigin="anonymous"></script>
-    </body>
 </section>
+</body>
